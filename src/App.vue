@@ -6,6 +6,7 @@ onMounted(() => {
     const nipple = nipplejs.create({
         zone: document.querySelector('.control'),
         threshold: 0.5,
+        lockX: true,
     })
     nipple.on('move', (event, data) => {
         console.log('aaaaaaaaa')
@@ -20,6 +21,7 @@ const see = () => {
 
 <template>
     <main class="container">
+        <div>1111111111</div>
         <div ref="nipple" class="control" @click.stop="see"></div>
     </main>
 </template>
@@ -33,9 +35,6 @@ body {
     position: relative;
     width: 100vw;
     height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     .control {
         position: absolute;
         top: 0;

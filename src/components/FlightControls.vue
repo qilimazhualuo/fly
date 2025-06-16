@@ -12,6 +12,26 @@
         </button>
       </div>
   
+      <!-- 控制输入显示 -->
+      <div class="controls-display">
+        <div class="control-item">
+          <span class="label">油门:</span>
+          <span class="value">{{ controls.throttle.toFixed(0) }}%</span>
+        </div>
+        <div class="control-item">
+          <span class="label">副翼:</span>
+          <span class="value">{{ controls.aileron.toFixed(0) }}</span>
+        </div>
+        <div class="control-item">
+          <span class="label">升降:</span>
+          <span class="value">{{ controls.elevator.toFixed(0) }}</span>
+        </div>
+        <div class="control-item">
+          <span class="label">方向:</span>
+          <span class="value">{{ controls.rudder.toFixed(0) }}</span>
+        </div>
+      </div>
+  
       <!-- 解锁按钮 -->
       <button 
         :class="['arm-button', flightData.armed ? 'disarm' : 'arm']"
@@ -35,6 +55,10 @@
     flightModes: {
       type: Array,
       default: () => ['MANUAL', 'STABILIZE', 'AUTO', 'RTL']
+    },
+    controls: {
+      type: Object,
+      required: true
     }
   })
   
@@ -68,6 +92,35 @@
       
       &:hover, &.active {
         background: rgba(33, 150, 243, 0.8);
+      }
+    }
+  }
+  
+  .controls-display {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    background: rgba(26, 26, 26, 0.8);
+    padding: 8px;
+    border-radius: 6px;
+    backdrop-filter: blur(5px);
+    margin-bottom: 8px;
+    flex-shrink: 0;
+    
+    .control-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 9px;
+      
+      .label {
+        color: rgba(255, 255, 255, 0.7);
+      }
+      
+      .value {
+        color: #4CAF50;
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
       }
     }
   }

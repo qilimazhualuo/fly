@@ -6,6 +6,7 @@ import FlightControls from './components/FlightControls.vue'
 import VirtualJoystick from './components/VirtualJoystick.vue'
 import ConfigPanel from './components/ConfigPanel.vue'
 import MapPanel from './components/MapPanel.vue'
+import ThrottleControl from './components/ThrottleControl.vue'
 
 // 飞行数据状态
 const flightData = reactive({
@@ -101,17 +102,19 @@ const handleTabChange = (tabId) => {
   activeTab.value = tabId
 }
 
+// 油门控制事件
+const handleThrottleChange = (value) => {
+  controls.throttle = value
+}
+
 // 摇杆控制事件
 const handleLeftJoystick = ({ x, y }) => {
-  // 左摇杆：x轴控制方向舵(rudder)，y轴控制油门(throttle)
-  // nipplejs: x(-100到100), y(-100到100，上为正)
+  // 左摇杆：只控制方向舵(rudder)
   controls.rudder = Math.max(-100, Math.min(100, x))
-  controls.throttle = Math.max(0, Math.min(100, y)) // 油门只能是0-100
 }
 
 const handleRightJoystick = ({ x, y }) => {
   // 右摇杆：x轴控制副翼(aileron)，y轴控制升降舵(elevator)
-  // nipplejs: x(-100到100), y(-100到100，上为正)
   controls.aileron = Math.max(-100, Math.min(100, x))
   controls.elevator = Math.max(-100, Math.min(100, -y)) // 反转y轴，因为飞控中上推是负值
 }
@@ -137,6 +140,7 @@ const handleRightJoystick = ({ x, y }) => {
           :flight-data="flightData"
           :current-mode="currentMode"
           :flight-modes="flightModes"
+          :controls="controls"
           @set-flight-mode="setFlightMode"
           @toggle-armed="toggleArmed"
         />
@@ -149,18 +153,22 @@ const handleRightJoystick = ({ x, y }) => {
       <MapPanel v-if="activeTab === 'map'" :flight-data="flightData" />
     </div>
 
+    <!-- 油门控制 -->
+    <ThrottleControl 
+      :value="controls.throttle"
+      @throttle-change="handleThrottleChange"
+    />
+
     <!-- 虚拟摇杆控制区域 -->
     <div class="joystick-area">
-      <!-- 左摇杆 (油门/偏航) -->
+      <!-- 左摇杆 (仅方向舵) -->
       <VirtualJoystick
         position="left"
         :labels="{
-          top: '油门',
           left: '左偏航',
           right: '右偏航'
         }"
         :display-values="{
-          'THR': `${controls.throttle.toFixed(0)}%`,
           'YAW': controls.rudder.toFixed(0)
         }"
         @joystick-move="handleLeftJoystick"
@@ -212,7 +220,7 @@ body {
   flex: 1;
   padding: 10px;
   overflow: hidden;
-  padding-bottom: 20px; // 增加底部间距为摇杆留空间
+  padding-bottom: 10px; // 减少底部间距，为油门控制留空间
 }
 
 .flight-panel {
@@ -225,7 +233,7 @@ body {
 
 .joystick-area {
   position: fixed;
-  bottom: 20px; // 移到真正的底部
+  bottom: 60px; // 向上移动，为油门控制留空间
   left: 0;
   right: 0;
   height: 140px;

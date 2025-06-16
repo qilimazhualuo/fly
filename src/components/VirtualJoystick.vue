@@ -41,6 +41,9 @@ let manager = null
 
 onMounted(() => {
   if (joystickRef.value) {
+    // 根据摇杆位置确定配置
+    const isLeftJoystick = props.position === 'left'
+    
     // 创建nipplejs管理器
     manager = nipplejs.create({
       zone: joystickRef.value,
@@ -55,8 +58,8 @@ onMounted(() => {
       dataOnly: false,
       restJoystick: true,
       restOpacity: 0.5,
-      lockX: false,
-      lockY: false,
+      lockX: isLeftJoystick,
+      lockY: false, // 左摇杆锁定Y轴，只允许X轴(左右)移动
       catchDistance: 200,
       dynamicPage: false
     })
@@ -67,7 +70,7 @@ onMounted(() => {
         // nipplejs返回的坐标系：x轴向右为正，y轴向上为正
         // 转换为我们需要的格式：x: -100到100, y: -100到100
         const x = (data.vector.x * 100)
-        const y = (data.vector.y * 100)
+        const y = isLeftJoystick ? 0 : (data.vector.y * 100) // 左摇杆不输出Y值
         
         emit('joystickMove', { x, y })
       }
@@ -75,6 +78,7 @@ onMounted(() => {
 
     // 监听摇杆结束事件
     manager.on('end', () => {
+      // 所有摇杆都回中
       emit('joystickMove', { x: 0, y: 0 })
     })
 

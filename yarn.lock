@@ -573,6 +573,11 @@ needle@^3.1.0:
     iconv-lite "^0.6.3"
     sax "^1.2.4"
 
+nipplejs@^0.10.2:
+  version "0.10.2"
+  resolved "https://registry.npmmirror.com/nipplejs/-/nipplejs-0.10.2.tgz#0e8f5346bd60f7a0fe0d44c856bc1654cde2b70c"
+  integrity sha512-XGxFY8C2DOtobf1fK+MXINTzkkXJLjZDDpfQhOUZf4TSytbc9s4bmA0lB9eKKM8iDivdr9NQkO7DpIQfsST+9g==
+
 parse-node-version@^1.0.1:
   version "1.0.1"
   resolved "https://registry.npmmirror.com/parse-node-version/-/parse-node-version-1.0.1.tgz#e2b5dbede00e7fa9bc363607f53327e8b073189b"

@@ -1,3 +1,30 @@
+<script setup>
+defineProps({
+    flightData: {
+        type: Object,
+        required: true
+    },
+    currentMode: {
+        type: String,
+        required: true
+    },
+    activeTab: {
+        type: String,
+        required: true
+    },
+    tabs: {
+        type: Array,
+        default: () => [
+            { id: 'flight', name: '飞行', icon: '✈️' },
+            { id: 'config', name: '配置', icon: '⚙️' },
+            { id: 'map', name: '地图', icon: '🗺️' }
+        ]
+    }
+})
+
+defineEmits(['tabChange'])
+</script>
+
 <template>
     <div class="status-bar">
         <div class="status-left">
@@ -25,33 +52,6 @@
         </div>
     </div>
 </template>
-
-<script setup>
-defineProps({
-    flightData: {
-        type: Object,
-        required: true
-    },
-    currentMode: {
-        type: String,
-        required: true
-    },
-    activeTab: {
-        type: String,
-        required: true
-    },
-    tabs: {
-        type: Array,
-        default: () => [
-            { id: 'flight', name: '飞行', icon: '✈️' },
-            { id: 'config', name: '配置', icon: '⚙️' },
-            { id: 'map', name: '地图', icon: '🗺️' }
-        ]
-    }
-})
-
-defineEmits(['tabChange'])
-</script>
 
 <style lang="less" scoped>
 .status-bar {

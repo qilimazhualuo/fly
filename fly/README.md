@@ -87,6 +87,165 @@ const char *password = "你的WiFi密码";
 - **油门控制**: 1000-2000μs PWM信号
 - **舵机控制**: 标准舵机PWM信号 (50Hz)
 
+## API接口
+
+### 设备发现接口
+系统提供了多个便于前端扫描和发现的HTTP接口：
+
+#### 1. 设备信息接口
+```
+GET /device
+GET /info
+```
+返回完整的设备信息，包括：
+- 设备名称、类型、版本
+- IP地址、MAC地址、端口
+- WiFi信号强度、SSID
+- 可用功能和API端点列表
+- 当前控制状态
+
+#### 2. 设备状态接口
+```
+GET /status
+```
+返回实时状态信息：
+- 系统时间戳和运行时长
+- 控制激活状态
+- 最后信号时间
+- WiFi连接状态
+- 内存使用情况
+
+#### 3. 设备扫描接口（简化版）
+```
+GET /scan
+```
+返回设备发现所需的基本信息：
+- 设备名称和类型
+- 网络信息（IP、MAC、端口）
+- 信号强度
+
+#### 4. 控制接口
+```
+GET /throttle?value=0-100      # 油门控制 (0-100%)
+GET /yaw?value=-100-100        # 偏航控制 (-100到100)
+GET /pitch?value=-100-100      # 俯仰控制 (-100到100)
+GET /roll?value=-100-100       # 翻滚控制 (-100到100)
+GET /ping                      # 心跳检测
+```
+
+### 前端扫描示例
+
+#### JavaScript扫描代码
+```javascript
+// 扫描局域网中的飞行器设备
+async function scanForDevices(ipRange = '192.168.1') {
+    const devices = [];
+    const promises = [];
+    
+    for (let i = 1; i <= 254; i++) {
+        const ip = `${ipRange}.${i}`;
+        const promise = fetch(`http://${ip}/scan`, {
+            method: 'GET',
+            timeout: 1000
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.device_found) {
+                devices.push({
+                    ip: ip,
+                    name: data.name,
+                    type: data.type,
+                    mac: data.mac,
+                    signal: data.signal
+                });
+            }
+        })
+        .catch(() => {}); // 忽略连接失败的IP
+        
+        promises.push(promise);
+    }
+    
+    await Promise.all(promises);
+    return devices;
+}
+
+// 获取设备详细信息
+async function getDeviceInfo(ip) {
+    try {
+        const response = await fetch(`http://${ip}/device`);
+        return await response.json();
+    } catch (error) {
+        console.error('获取设备信息失败:', error);
+        return null;
+    }
+}
+
+// 控制飞行器
+async function controlAircraft(ip, command, value) {
+    try {
+        const response = await fetch(`http://${ip}/${command}?value=${value}`);
+        return await response.json();
+    } catch (error) {
+        console.error('控制失败:', error);
+        return null;
+    }
+}
+```
+
+#### Python扫描代码
+```python
+import requests
+import threading
+import time
+
+def scan_device(ip):
+    """扫描单个IP地址"""
+    try:
+        response = requests.get(f'http://{ip}/scan', timeout=1)
+        if response.status_code == 200:
+            data = response.json()
+            if data.get('device_found'):
+                return {
+                    'ip': ip,
+                    'name': data.get('name'),
+                    'type': data.get('type'),
+                    'mac': data.get('mac'),
+                    'signal': data.get('signal')
+                }
+    except:
+        pass
+    return None
+
+def scan_network(ip_range='192.168.1'):
+    """扫描整个网段"""
+    devices = []
+    threads = []
+    results = []
+    
+    def worker(ip):
+        device = scan_device(ip)
+        if device:
+            results.append(device)
+    
+    # 创建线程扫描
+    for i in range(1, 255):
+        ip = f'{ip_range}.{i}'
+        thread = threading.Thread(target=worker, args=(ip,))
+        threads.append(thread)
+        thread.start()
+    
+    # 等待所有线程完成
+    for thread in threads:
+        thread.join()
+    
+    return results
+
+# 使用示例
+devices = scan_network()
+for device in devices:
+    print(f"发现设备: {device['name']} at {device['ip']}")
+```
+
 ## 安全注意事项
 
 ⚠️ **重要安全提醒**

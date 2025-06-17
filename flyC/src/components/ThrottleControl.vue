@@ -1,22 +1,3 @@
-<template>
-    <div class="throttle-control">
-        <div class="throttle-label">
-            <span>油门</span>
-            <span class="throttle-value">{{ throttleValue.toFixed(0) }}%</span>
-        </div>
-        <button class="throttle-btn decrease" @click="decreaseThrottle" :disabled="throttleValue <= 0">
-            -
-        </button>
-        <div class="throttle-slider-container">
-            <Slider v-model:value="throttleValue" :min="0" :max="100" :step="1"
-                :tooltip-formatter="(value) => `${value}%`" @change="handleThrottleChange" class="throttle-slider" />
-        </div>
-        <button class="throttle-btn increase" @click="increaseThrottle" :disabled="throttleValue >= 100">
-            +
-        </button>
-    </div>
-</template>
-
 <script setup>
 import { ref, watch } from 'vue'
 import { Slider } from 'ant-design-vue'
@@ -55,6 +36,25 @@ const increaseThrottle = () => {
     }
 }
 </script>
+
+<template>
+    <div class="throttle-control">
+        <div class="throttle-label">
+            <span>油门</span>
+            <span class="throttle-value">{{ throttleValue.toFixed(0) }}%</span>
+        </div>
+        <button class="throttle-btn decrease" @click="decreaseThrottle" :disabled="throttleValue <= 0">
+            -
+        </button>
+        <div class="throttle-slider-container">
+            <Slider v-model:value="throttleValue" :min="0" :max="100" :step="1"
+                :tooltip-formatter="(value) => `${value}%`" @change="handleThrottleChange" class="throttle-slider" />
+        </div>
+        <button class="throttle-btn increase" @click="increaseThrottle" :disabled="throttleValue >= 100">
+            +
+        </button>
+    </div>
+</template>
 
 <style lang="less" scoped>
 .throttle-control {

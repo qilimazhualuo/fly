@@ -1,13 +1,3 @@
-<template>
-    <div class="tab-dropdown">
-        <select :value="activeTab" @change="$emit('tabChange', $event.target.value)" class="tab-select">
-            <option v-for="tab in tabs" :key="tab.id" :value="tab.id">
-                {{ tab.icon }} {{ tab.name }}
-            </option>
-        </select>
-    </div>
-</template>
-
 <script setup>
 defineProps({
     activeTab: {
@@ -26,6 +16,16 @@ defineProps({
 
 defineEmits(['tabChange'])
 </script>
+
+<template>
+    <div class="tab-dropdown">
+        <select :value="activeTab" @change="$emit('tabChange', $event.target.value)" class="tab-select">
+            <option v-for="tab in tabs" :key="tab.id" :value="tab.id">
+                {{ tab.icon }} {{ tab.name }}
+            </option>
+        </select>
+    </div>
+</template>
 
 <style lang="less" scoped>
 .tab-dropdown {

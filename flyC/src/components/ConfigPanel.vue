@@ -1,3 +1,7 @@
+<script setup>
+// 配置面板不需要props，因为目前是静态配置
+</script>
+
 <template>
     <div class="config-panel">
         <div class="config-section">
@@ -43,10 +47,6 @@
         </div>
     </div>
 </template>
-
-<script setup>
-// 配置面板不需要props，因为目前是静态配置
-</script>
 
 <style lang="less" scoped>
 .config-panel {

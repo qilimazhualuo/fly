@@ -1,3 +1,12 @@
+<script setup>
+defineProps({
+    flightData: {
+        type: Object,
+        required: true
+    }
+})
+</script>
+
 <template>
     <div class="horizon-display">
         <div class="horizon-container">
@@ -29,15 +38,6 @@
         </div>
     </div>
 </template>
-
-<script setup>
-defineProps({
-    flightData: {
-        type: Object,
-        required: true
-    }
-})
-</script>
 
 <style lang="less" scoped>
 .horizon-display {

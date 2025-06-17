@@ -1,3 +1,73 @@
+<script setup>
+import { reactive } from 'vue'
+
+const config = reactive({
+    aileron: {
+        travel: 75
+    },
+    elevator: {
+        travel: 80
+    },
+    rudder: {
+        travel: 70
+    },
+    flaps: {
+        angle: 0
+    },
+    flight: {
+        stallSpeed: 12,
+        cruiseSpeed: 25,
+        maxSpeed: 45,
+        cruiseAltitude: 100
+    },
+    pid: {
+        pitch: {
+            p: 0.5,
+            i: 0.01,
+            d: 0.05
+        },
+        roll: {
+            p: 0.6,
+            i: 0.02,
+            d: 0.08
+        },
+        yaw: {
+            p: 0.3,
+            i: 0.005,
+            d: 0.02
+        }
+    }
+})
+
+const saveConfig = () => {
+    localStorage.setItem('fixedWingConfig', JSON.stringify(config))
+    console.log('配置已保存')
+}
+
+const loadConfig = () => {
+    const saved = localStorage.getItem('fixedWingConfig')
+    if (saved) {
+        Object.assign(config, JSON.parse(saved))
+        console.log('配置已加载')
+    }
+}
+
+const resetConfig = () => {
+    config.aileron.travel = 75
+    config.elevator.travel = 80
+    config.rudder.travel = 70
+    config.flaps.angle = 0
+    config.flight.stallSpeed = 12
+    config.flight.cruiseSpeed = 25
+    config.flight.maxSpeed = 45
+    config.flight.cruiseAltitude = 100
+    config.pid.pitch = { p: 0.5, i: 0.01, d: 0.05 }
+    config.pid.roll = { p: 0.6, i: 0.02, d: 0.08 }
+    config.pid.yaw = { p: 0.3, i: 0.005, d: 0.02 }
+    console.log('配置已重置')
+}
+</script>
+
 <template>
     <div class="config-panel">
         <h3>固定翼配置</h3>
@@ -144,76 +214,6 @@
         </div>
     </div>
 </template>
-
-<script setup>
-import { reactive } from 'vue'
-
-const config = reactive({
-    aileron: {
-        travel: 75
-    },
-    elevator: {
-        travel: 80
-    },
-    rudder: {
-        travel: 70
-    },
-    flaps: {
-        angle: 0
-    },
-    flight: {
-        stallSpeed: 12,
-        cruiseSpeed: 25,
-        maxSpeed: 45,
-        cruiseAltitude: 100
-    },
-    pid: {
-        pitch: {
-            p: 0.5,
-            i: 0.01,
-            d: 0.05
-        },
-        roll: {
-            p: 0.6,
-            i: 0.02,
-            d: 0.08
-        },
-        yaw: {
-            p: 0.3,
-            i: 0.005,
-            d: 0.02
-        }
-    }
-})
-
-const saveConfig = () => {
-    localStorage.setItem('fixedWingConfig', JSON.stringify(config))
-    console.log('配置已保存')
-}
-
-const loadConfig = () => {
-    const saved = localStorage.getItem('fixedWingConfig')
-    if (saved) {
-        Object.assign(config, JSON.parse(saved))
-        console.log('配置已加载')
-    }
-}
-
-const resetConfig = () => {
-    config.aileron.travel = 75
-    config.elevator.travel = 80
-    config.rudder.travel = 70
-    config.flaps.angle = 0
-    config.flight.stallSpeed = 12
-    config.flight.cruiseSpeed = 25
-    config.flight.maxSpeed = 45
-    config.flight.cruiseAltitude = 100
-    config.pid.pitch = { p: 0.5, i: 0.01, d: 0.05 }
-    config.pid.roll = { p: 0.6, i: 0.02, d: 0.08 }
-    config.pid.yaw = { p: 0.3, i: 0.005, d: 0.02 }
-    console.log('配置已重置')
-}
-</script>
 
 <style lang="less" scoped>
 .config-panel {

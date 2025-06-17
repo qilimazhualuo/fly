@@ -11,7 +11,7 @@
         "C:\\Users\\Administrator\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.2.0\\libraries\\WebServer\\src/**",
         "C:\\Users\\Administrator\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.2.0\\libraries\\FS\\src/**",
         "C:\\Users\\Administrator\\Documents\\Arduino\\libraries/**",
-        "E:\\zb\\Documents\\GitHub\\fly\\fly/**",
+        "E:\\zb\\Documents\\GitHub\\fly\\fly-c\\fly/**",
         "C:\\Users\\Administrator\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.4-2f7dcd86-v1\\esp32s3\\include/**"
       ],
       "forcedInclude": [
@@ -44,7 +44,7 @@
         "-DARDUINO_USB_MSC_ON_BOOT=0",
         "-DARDUINO_USB_DFU_ON_BOOT=0",
         "@C:\\Users\\Administrator\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.4-2f7dcd86-v1\\esp32s3/flags/defines",
-        "-IE:\\zb\\Documents\\GitHub\\fly\\fly",
+        "-IE:\\zb\\Documents\\GitHub\\fly\\fly-c\\fly",
         "-iprefix",
         "C:\\Users\\Administrator\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.4-2f7dcd86-v1\\esp32s3/include/",
         "@C:\\Users\\Administrator\\AppData\\Local\\Arduino15\\packages\\esp32\\tools\\esp32-arduino-libs\\idf-release_v5.4-2f7dcd86-v1\\esp32s3/flags/includes",
@@ -56,11 +56,11 @@
         "-IC:\\Users\\Administrator\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.2.0\\libraries\\Network\\src",
         "-IC:\\Users\\Administrator\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.2.0\\libraries\\WebServer\\src",
         "-IC:\\Users\\Administrator\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.2.0\\libraries\\FS\\src",
-        "@E:\\zb\\Documents\\GitHub\\fly\\fly\\build/build_opt.h",
-        "@E:\\zb\\Documents\\GitHub\\fly\\fly\\build/file_opts",
-        "E:\\zb\\Documents\\GitHub\\fly\\fly\\build\\sketch\\fly.ino.cpp",
+        "@E:\\zb\\Documents\\GitHub\\fly\\fly-c\\fly\\build/build_opt.h",
+        "@E:\\zb\\Documents\\GitHub\\fly\\fly-c\\fly\\build/file_opts",
+        "E:\\zb\\Documents\\GitHub\\fly\\fly-c\\fly\\build\\sketch\\fly.ino.cpp",
         "-o",
-        "E:\\zb\\Documents\\GitHub\\fly\\fly\\build\\sketch\\fly.ino.cpp.o"
+        "E:\\zb\\Documents\\GitHub\\fly\\fly-c\\fly\\build\\sketch\\fly.ino.cpp.o"
       ],
       "defines": [
         "F_CPU=240000000L",

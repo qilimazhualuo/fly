@@ -1,3 +1,26 @@
+<script setup>
+defineProps({
+    flightData: {
+        type: Object,
+        required: true
+    },
+    currentMode: {
+        type: String,
+        required: true
+    },
+    flightModes: {
+        type: Array,
+        default: () => ['MANUAL', 'STABILIZE', 'AUTO', 'RTL']
+    },
+    controls: {
+        type: Object,
+        required: true
+    }
+})
+
+defineEmits(['setFlightMode', 'toggleArmed'])
+</script>
+
 <template>
     <div class="flight-controls">
         <!-- 飞行模式选择 -->
@@ -34,29 +57,6 @@
         </button>
     </div>
 </template>
-
-<script setup>
-defineProps({
-    flightData: {
-        type: Object,
-        required: true
-    },
-    currentMode: {
-        type: String,
-        required: true
-    },
-    flightModes: {
-        type: Array,
-        default: () => ['MANUAL', 'STABILIZE', 'AUTO', 'RTL']
-    },
-    controls: {
-        type: Object,
-        required: true
-    }
-})
-
-defineEmits(['setFlightMode', 'toggleArmed'])
-</script>
 
 <style lang="less" scoped>
 .flight-controls {

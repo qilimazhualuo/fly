@@ -1,20 +1,3 @@
-<template>
-    <div class="joystick-container" :class="position">
-        <div ref="joystickRef" class="joystick-zone"></div>
-        <div class="joystick-labels">
-            <span v-if="labels.top" class="label-top">{{ labels.top }}</span>
-            <span v-if="labels.bottom" class="label-bottom">{{ labels.bottom }}</span>
-            <span v-if="labels.left" class="label-left">{{ labels.left }}</span>
-            <span v-if="labels.right" class="label-right">{{ labels.right }}</span>
-        </div>
-        <div class="control-values">
-            <div v-for="(value, key) in displayValues" :key="key">
-                {{ key }}: {{ value }}
-            </div>
-        </div>
-    </div>
-</template>
-
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import nipplejs from 'nipplejs'
@@ -96,6 +79,23 @@ onUnmounted(() => {
     }
 })
 </script>
+
+<template>
+    <div class="joystick-container" :class="position">
+        <div ref="joystickRef" class="joystick-zone"></div>
+        <div class="joystick-labels">
+            <span v-if="labels.top" class="label-top">{{ labels.top }}</span>
+            <span v-if="labels.bottom" class="label-bottom">{{ labels.bottom }}</span>
+            <span v-if="labels.left" class="label-left">{{ labels.left }}</span>
+            <span v-if="labels.right" class="label-right">{{ labels.right }}</span>
+        </div>
+        <div class="control-values">
+            <div v-for="(value, key) in displayValues" :key="key">
+                {{ key }}: {{ value }}
+            </div>
+        </div>
+    </div>
+</template>
 
 <style lang="less" scoped>
 .joystick-container {

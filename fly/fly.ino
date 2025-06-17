@@ -22,17 +22,17 @@ TCPManager tcpManager(esc, yawServo, pitchServo, rollServo);
 void calibrateESC()
 {
     Serial.println("开始电调校准...");
-
+    
     // 发送最大油门信号
     Serial.println("设置最大油门");
     esc.writeMicroseconds(2000);
     delay(2000);
-
+    
     // 发送最小油门信号
     Serial.println("设置最小油门");
     esc.writeMicroseconds(1000);
     delay(4000);
-
+    
     Serial.println("电调校准完成");
 }
 
@@ -41,17 +41,47 @@ void setup()
     Serial.begin(115200);
     Serial.println("启动中...");
 
-    // 允许分配通道给电调PWM
-    ESP32PWM::allocateTimer(0);
-    ESP32PWM::allocateTimer(1);
-    ESP32PWM::allocateTimer(2);
-    ESP32PWM::allocateTimer(3);
+    // 重新分配定时器，避免与WiFi冲突
+    // WiFi通常使用Timer 0和1，我们使用Timer 2和3
+    ESP32PWM::allocateTimer(2);  // 改用Timer 2
+    ESP32PWM::allocateTimer(3);  // 改用Timer 3
 
-    // 配置电调PWM
-    esc.setPeriodHertz(400);          // 设置为400Hz，适合航模电调
+    // 先只初始化电调，避免多PWM干扰
+    // 如果400Hz与WiFi有冲突，可以尝试50Hz
+    esc.setPeriodHertz(50);           // 尝试50Hz频率，避免与WiFi 2.4GHz冲突
     esc.attach(motorPin, 1000, 2000); // 引脚, 最小脉冲宽度1000us(0%油门), 最大脉冲宽度2000us(100%油门)
 
-    // 配置舵机PWM
+    Serial.println("电调已初始化");
+
+    pinMode(lightPin, OUTPUT);
+    digitalWrite(lightPin, HIGH);
+
+    // 先设置为最小油门，确保电调能正确识别信号范围
+    esc.writeMicroseconds(1000);
+    delay(3000); // 等待电调完成初始化
+
+    // 电调校准（使用BLE版本的成功流程）
+    calibrateESC();
+
+    Serial.println("油门设置为0%");
+
+    // WiFi初始化前，确保电调处于稳定状态
+    Serial.println("WiFi初始化前稳定电调...");
+    esc.writeMicroseconds(1000);
+    delay(1000);
+
+    // 最后初始化WiFi和TCP服务器
+    Serial.println("初始化网络服务...");
+    tcpManager.init(ssid, password);
+
+    // WiFi初始化后，重新确认电调状态
+    Serial.println("WiFi初始化后稳定电调...");
+    delay(500);
+    esc.writeMicroseconds(1000);
+    Serial.println("电调状态已重新确认");
+
+    // 延迟初始化舵机，避免干扰电调
+    Serial.println("初始化舵机...");
     yawServo.setPeriodHertz(50);        // 标准舵机50Hz
     yawServo.attach(yawPin, 1000, 2000);
     
@@ -61,21 +91,18 @@ void setup()
     rollServo.setPeriodHertz(50);
     rollServo.attach(rollPin, 1000, 2000);
 
-    Serial.println("电调和舵机已初始化");
+    Serial.println("舵机已初始化");
 
-    pinMode(lightPin, OUTPUT);
-    digitalWrite(lightPin, HIGH);
+    // 设置舵机中立位置
+    yawServo.writeMicroseconds(1500);   // 偏航中立
+    pitchServo.writeMicroseconds(1500); // 拉升俯冲中立
+    rollServo.writeMicroseconds(1500);  // 翻滚中立
 
-    // 先设置为最小油门，确保电调能正确识别信号范围
-    esc.writeMicroseconds(1000);
-    delay(3000); // 等待电调完成初始化
-
-    calibrateESC();
-
-    Serial.println("油门设置为0%");
-
-    // 初始化TCP服务器
+    // 最后初始化WiFi和TCP服务器
+    Serial.println("初始化网络服务...");
     tcpManager.init(ssid, password);
+    
+    Serial.println("系统启动完成！");
 }
 
 void loop()

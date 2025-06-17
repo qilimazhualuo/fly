@@ -1,57 +1,3 @@
-<template>
-    <div class="map-container">
-        <div class="map-header">
-            <h3>飞行地图</h3>
-            <div class="map-controls">
-                <button @click="centerOnAircraft" class="map-btn">
-                    居中飞机
-                </button>
-                <button @click="togglePath" class="map-btn">
-                    {{ showPath ? '隐藏航线' : '显示航线' }}
-                </button>
-            </div>
-        </div>
-
-        <div class="map-display">
-            <div class="map-grid">
-                <!-- 简化的地图网格 -->
-                <div v-for="i in 20" :key="`h-${i}`" class="grid-line horizontal" :style="{ top: `${i * 5}%` }"></div>
-                <div v-for="i in 20" :key="`v-${i}`" class="grid-line vertical" :style="{ left: `${i * 5}%` }"></div>
-            </div>
-
-            <!-- 飞机位置 -->
-            <div class="aircraft-position" :style="{
-                left: `${aircraftX}%`,
-                top: `${aircraftY}%`,
-                transform: `translate(-50%, -50%) rotate(${heading}deg)`
-            }">
-                <div class="aircraft-icon">✈</div>
-            </div>
-
-            <!-- 飞行路径 -->
-            <svg v-if="showPath" class="flight-path">
-                <polyline :points="pathPoints" stroke="#00ff00" stroke-width="2" fill="none" />
-            </svg>
-
-            <!-- 航点 -->
-            <div v-for="(waypoint, index) in waypoints" :key="`wp-${index}`" class="waypoint" :style="{
-                left: `${waypoint.x}%`,
-                top: `${waypoint.y}%`
-            }">
-                <div class="waypoint-marker">{{ index + 1 }}</div>
-            </div>
-        </div>
-
-        <div class="map-info">
-            <div class="coord-display">
-                <span>纬度: {{ latitude.toFixed(6) }}°</span>
-                <span>经度: {{ longitude.toFixed(6) }}°</span>
-                <span>航向: {{ heading.toFixed(0) }}°</span>
-            </div>
-        </div>
-    </div>
-</template>
-
 <script setup>
 import { ref, computed, watch } from 'vue'
 
@@ -105,6 +51,60 @@ const togglePath = () => {
     showPath.value = !showPath.value
 }
 </script>
+
+<template>
+    <div class="map-container">
+        <div class="map-header">
+            <h3>飞行地图</h3>
+            <div class="map-controls">
+                <button @click="centerOnAircraft" class="map-btn">
+                    居中飞机
+                </button>
+                <button @click="togglePath" class="map-btn">
+                    {{ showPath ? '隐藏航线' : '显示航线' }}
+                </button>
+            </div>
+        </div>
+
+        <div class="map-display">
+            <div class="map-grid">
+                <!-- 简化的地图网格 -->
+                <div v-for="i in 20" :key="`h-${i}`" class="grid-line horizontal" :style="{ top: `${i * 5}%` }"></div>
+                <div v-for="i in 20" :key="`v-${i}`" class="grid-line vertical" :style="{ left: `${i * 5}%` }"></div>
+            </div>
+
+            <!-- 飞机位置 -->
+            <div class="aircraft-position" :style="{
+                left: `${aircraftX}%`,
+                top: `${aircraftY}%`,
+                transform: `translate(-50%, -50%) rotate(${heading}deg)`
+            }">
+                <div class="aircraft-icon">✈</div>
+            </div>
+
+            <!-- 飞行路径 -->
+            <svg v-if="showPath" class="flight-path">
+                <polyline :points="pathPoints" stroke="#00ff00" stroke-width="2" fill="none" />
+            </svg>
+
+            <!-- 航点 -->
+            <div v-for="(waypoint, index) in waypoints" :key="`wp-${index}`" class="waypoint" :style="{
+                left: `${waypoint.x}%`,
+                top: `${waypoint.y}%`
+            }">
+                <div class="waypoint-marker">{{ index + 1 }}</div>
+            </div>
+        </div>
+
+        <div class="map-info">
+            <div class="coord-display">
+                <span>纬度: {{ latitude.toFixed(6) }}°</span>
+                <span>经度: {{ longitude.toFixed(6) }}°</span>
+                <span>航向: {{ heading.toFixed(0) }}°</span>
+            </div>
+        </div>
+    </div>
+</template>
 
 <style lang="less" scoped>
 .map-container {

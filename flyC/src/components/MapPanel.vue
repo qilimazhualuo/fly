@@ -1,3 +1,12 @@
+<script setup>
+defineProps({
+    flightData: {
+        type: Object,
+        required: true
+    }
+})
+</script>
+
 <template>
     <div class="map-panel">
         <div class="mini-map">
@@ -15,15 +24,6 @@
         </div>
     </div>
 </template>
-
-<script setup>
-defineProps({
-    flightData: {
-        type: Object,
-        required: true
-    }
-})
-</script>
 
 <style lang="less" scoped>
 .map-panel {

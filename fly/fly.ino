@@ -88,8 +88,9 @@ void setup()
     pitchServo.setPeriodHertz(50);
     pitchServo.attach(pitchPin, 1000, 2000);
     
+    // SG90舵机使用正确的脉冲宽度范围
     rollServo.setPeriodHertz(50);
-    rollServo.attach(rollPin, 1000, 2000);
+    rollServo.attach(rollPin, 500, 2500);  // SG90标准范围：500-2500μs
 
     Serial.println("舵机已初始化");
 
@@ -97,6 +98,28 @@ void setup()
     yawServo.writeMicroseconds(1500);   // 偏航中立
     pitchServo.writeMicroseconds(1500); // 拉升俯冲中立
     rollServo.writeMicroseconds(1500);  // 翻滚中立
+    
+    // 添加rollServo测试序列
+    Serial.println("开始rollServo测试...");
+    
+    // 测试rollServo的完整范围
+    Serial.println("rollServo -> 0度");
+    rollServo.writeMicroseconds(500);
+    delay(1000);
+    
+    Serial.println("rollServo -> 90度 (中立)");
+    rollServo.writeMicroseconds(1500);
+    delay(1000);
+    
+    Serial.println("rollServo -> 180度");
+    rollServo.writeMicroseconds(2500);
+    delay(1000);
+    
+    Serial.println("rollServo -> 90度 (中立) - 最终位置");
+    rollServo.writeMicroseconds(1500);
+    delay(500);
+    
+    Serial.println("rollServo测试完成");
 
     // 最后初始化WiFi和TCP服务器
     Serial.println("初始化网络服务...");

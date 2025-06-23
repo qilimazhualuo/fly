@@ -155,16 +155,20 @@ private:
         if (server.hasArg("value")) {
             int roll = server.arg("value").toInt();
             if (roll >= -100 && roll <= 100) {
-                int pulseWidth = map(roll, -100, 100, 1000, 2000);
+                // SG90舵机使用正确的脉冲宽度范围：500-2500μs
+                int pulseWidth = map(roll, -100, 100, 500, 2500);
                 rollServo.writeMicroseconds(pulseWidth);
                 Serial.print("设置翻滚: ");
-                Serial.println(roll);
+                Serial.print(roll);
+                Serial.print(" (");
+                Serial.print(pulseWidth);
+                Serial.println("μs)");
                 
                 // 更新最后信号时间
                 lastSignalTime = millis();
                 controlActive = true;
                 
-                server.send(200, "application/json", "{\"status\":\"OK\",\"value\":" + String(roll) + "}");
+                server.send(200, "application/json", "{\"status\":\"OK\",\"value\":" + String(roll) + ",\"pulse\":" + String(pulseWidth) + "}");
             } else {
                 server.send(400, "application/json", "{\"error\":\"Invalid roll value (-100 to 100)\"}");
             }

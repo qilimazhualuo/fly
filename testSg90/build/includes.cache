@@ -1,0 +1,32 @@
+[
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "C:\\Users\\Administrator\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.2.0\\cores\\esp32"
+  },
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "C:\\Users\\Administrator\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\3.2.0\\variants\\esp32s3"
+  },
+  {
+    "Sourcefile": "E:\\zb\\Documents\\GitHub\\fight\\testSg90\\build\\sketch\\testSg90.ino.cpp",
+    "Include": "ESP32Servo.h",
+    "Includepath": "C:\\Users\\Administrator\\Documents\\Arduino\\libraries\\ESP32Servo\\src"
+  },
+  {
+    "Sourcefile": "E:\\zb\\Documents\\GitHub\\fight\\testSg90\\build\\sketch\\testSg90.ino.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\Administrator\\Documents\\Arduino\\libraries\\ESP32Servo\\src\\ESP32PWM.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "C:\\Users\\Administrator\\Documents\\Arduino\\libraries\\ESP32Servo\\src\\ESP32Servo.cpp",
+    "Include": "",
+    "Includepath": null
+  }
+]

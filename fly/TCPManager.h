@@ -9,9 +9,10 @@ class TCPManager {
 private:
     WebServer server;
     Servo& esc;           // 油门控制（电调）
-    Servo& yawServo;      // 偏航舵机
+    // Servo& yawServo;      // 偏航舵机 - 暂时屏蔽
     Servo& pitchServo;    // 拉升俯冲舵机
-    Servo& rollServo;     // 翻滚舵机
+    Servo& leftRollServo;     // 左翻滚舵机
+    Servo& rightRollServo;    // 右翻滚舵机
     const int port;
     unsigned long lastSignalTime;  // 记录最后一次信号时间
     const unsigned long timeoutMs = 10000;  // 10秒超时
@@ -37,12 +38,11 @@ private:
         response += "\"uptime\":" + String(millis()) + ",";
         response += "\"wifi_ssid\":\"" + WiFi.SSID() + "\",";
         response += "\"control_active\":" + String(controlActive ? "true" : "false") + ",";
-        response += "\"capabilities\":[\"throttle\",\"yaw\",\"pitch\",\"roll\"],";
+        response += "\"capabilities\":[\"throttle\",\"pitch\",\"dual_roll\"],";
         response += "\"api_endpoints\":{";
         response += "\"throttle\":\"/throttle?value=0-100\",";
-        response += "\"yaw\":\"/yaw?value=-100-100\",";
         response += "\"pitch\":\"/pitch?value=-100-100\",";
-        response += "\"roll\":\"/roll?value=-100-100\",";
+        response += "\"roll\":\"/roll?value=-100-100 (dual servo control)\",";
         response += "\"status\":\"/status\",";
         response += "\"ping\":\"/ping\"";
         response += "}";
@@ -107,28 +107,6 @@ private:
         }
     }
 
-    void handleYaw() {
-        if (server.hasArg("value")) {
-            int yaw = server.arg("value").toInt();
-            if (yaw >= -100 && yaw <= 100) {
-                int pulseWidth = map(yaw, -100, 100, 1000, 2000);
-                yawServo.writeMicroseconds(pulseWidth);
-                Serial.print("设置偏航: ");
-                Serial.println(yaw);
-                
-                // 更新最后信号时间
-                lastSignalTime = millis();
-                controlActive = true;
-                
-                server.send(200, "application/json", "{\"status\":\"OK\",\"value\":" + String(yaw) + "}");
-            } else {
-                server.send(400, "application/json", "{\"error\":\"Invalid yaw value (-100 to 100)\"}");
-            }
-        } else {
-            server.send(400, "application/json", "{\"error\":\"Missing value parameter\"}");
-        }
-    }
-
     void handlePitch() {
         if (server.hasArg("value")) {
             int pitch = server.arg("value").toInt();
@@ -156,19 +134,39 @@ private:
             int roll = server.arg("value").toInt();
             if (roll >= -100 && roll <= 100) {
                 // SG90舵机使用正确的脉冲宽度范围：500-2500μs
-                int pulseWidth = map(roll, -100, 100, 500, 2500);
-                rollServo.writeMicroseconds(pulseWidth);
+                // 翻滚控制：左右舵机反向动作实现翻滚
+                int leftPulseWidth, rightPulseWidth;
+                
+                if (roll < 0) {
+                    // 向左翻滚：左舵机向上，右舵机向上
+                    leftPulseWidth = map(-roll, 0, 100, 1500, 500);    // 左舵机向上
+                    rightPulseWidth = map(-roll, 0, 100, 1500, 500);   // 右舵机向上
+                } else if (roll > 0) {
+                    // 向右翻滚：左舵机向下，右舵机向下
+                    leftPulseWidth = map(roll, 0, 100, 1500, 2500);    // 左舵机向下
+                    rightPulseWidth = map(roll, 0, 100, 1500, 2500);   // 右舵机向下
+                } else {
+                    // 中立位置
+                    leftPulseWidth = 1500;
+                    rightPulseWidth = 1500;
+                }
+                
+                leftRollServo.writeMicroseconds(leftPulseWidth);
+                rightRollServo.writeMicroseconds(rightPulseWidth);
+                
                 Serial.print("设置翻滚: ");
                 Serial.print(roll);
-                Serial.print(" (");
-                Serial.print(pulseWidth);
+                Serial.print(" (左:");
+                Serial.print(leftPulseWidth);
+                Serial.print("μs, 右:");
+                Serial.print(rightPulseWidth);
                 Serial.println("μs)");
                 
                 // 更新最后信号时间
                 lastSignalTime = millis();
                 controlActive = true;
                 
-                server.send(200, "application/json", "{\"status\":\"OK\",\"value\":" + String(roll) + ",\"pulse\":" + String(pulseWidth) + "}");
+                server.send(200, "application/json", "{\"status\":\"OK\",\"value\":" + String(roll) + ",\"left_pulse\":" + String(leftPulseWidth) + ",\"right_pulse\":" + String(rightPulseWidth) + "}");
             } else {
                 server.send(400, "application/json", "{\"error\":\"Invalid roll value (-100 to 100)\"}");
             }
@@ -188,9 +186,9 @@ private:
         if (controlActive && (millis() - lastSignalTime > timeoutMs)) {
             // 超时，将所有控制设置为中立位置
             esc.writeMicroseconds(1000);        // 油门归零
-            yawServo.writeMicroseconds(1500);   // 偏航中立
             pitchServo.writeMicroseconds(1500); // 拉升俯冲中立
-            rollServo.writeMicroseconds(1500);  // 翻滚中立
+            leftRollServo.writeMicroseconds(1500);  // 左翻滚中立
+            rightRollServo.writeMicroseconds(1500); // 右翻滚中立
             controlActive = false;
             Serial.println("超时保护：所有控制已设置为安全位置");
         }
@@ -261,8 +259,8 @@ private:
     }
 
 public:
-    TCPManager(Servo& e, Servo& y, Servo& p, Servo& r, int serverPort = 80) 
-        : esc(e), yawServo(y), pitchServo(p), rollServo(r), 
+    TCPManager(Servo& e, Servo& p, Servo& lr, Servo& rr, int serverPort = 80) 
+        : esc(e), pitchServo(p), leftRollServo(lr), rightRollServo(rr), 
           server(serverPort), port(serverPort), lastSignalTime(0) {}
 
     void init(const char* ssid, const char* password) {
@@ -312,7 +310,6 @@ public:
 
         // 设置API路由
         server.on("/throttle", HTTP_GET, [this]() { this->handleThrottle(); });
-        server.on("/yaw", HTTP_GET, [this]() { this->handleYaw(); });
         server.on("/pitch", HTTP_GET, [this]() { this->handlePitch(); });
         server.on("/roll", HTTP_GET, [this]() { this->handleRoll(); });
         server.on("/ping", HTTP_GET, [this]() { this->handlePing(); });
@@ -334,7 +331,6 @@ public:
         Serial.println("HTTP服务器已启动");
         Serial.println("控制接口:");
         Serial.println("  油门: http://" + WiFi.localIP().toString() + "/throttle?value=0-100");
-        Serial.println("  偏航: http://" + WiFi.localIP().toString() + "/yaw?value=-100-100");
         Serial.println("  拉升俯冲: http://" + WiFi.localIP().toString() + "/pitch?value=-100-100");
         Serial.println("  翻滚: http://" + WiFi.localIP().toString() + "/roll?value=-100-100");
         Serial.println("  Ping: http://" + WiFi.localIP().toString() + "/ping");
@@ -345,9 +341,9 @@ public:
         
         // 初始化最后信号时间和舵机中立位置
         lastSignalTime = millis();
-        yawServo.writeMicroseconds(1500);   // 偏航中立
         pitchServo.writeMicroseconds(1500); // 拉升俯冲中立
-        rollServo.writeMicroseconds(1500);  // 翻滚中立
+        leftRollServo.writeMicroseconds(1500);  // 左翻滚中立
+        rightRollServo.writeMicroseconds(1500); // 右翻滚中立
         esc.writeMicroseconds(1000);        // 油门归零
         
         Serial.println("TCP管理器初始化完成");

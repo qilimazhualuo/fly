@@ -32,7 +32,7 @@ const scanProgress = ref({
     currentIP: '',
     phase: '',
 })
-const manualIP = ref('192.168.1.7') // 默认设置为用户提到的IP
+const manualIP = ref('') // 默认设置ip
 
 // 获取本机IP地址
 const getLocalIP = async () => {

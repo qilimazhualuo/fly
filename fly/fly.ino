@@ -9,17 +9,15 @@ const char *password = "123ZHANGbei";
 const int motorPin = 11;
 const int yawPin = 16;    // 偏航舵机引脚
 const int pitchPin = 4;  // 俯仰舵机引脚
-const int leftRollPin = 13; // 左翻滚舵机引脚
-const int rightRollPin = 9; // 右翻滚舵机引脚 (改为引脚9，GPIO8是SDIO_D3特殊功能引脚)
+const int rollPin = 13; // 翻滚舵机引脚
 const int lightPin = 10;
 
 // 创建电调和舵机对象
 Servo esc;
-// Servo yawServo;  // 暂时屏蔽偏航舵机
+Servo yawServo;    // 偏航舵机
 Servo pitchServo;
-Servo leftRollServo;
-Servo rightRollServo;
-TCPManager tcpManager(esc, pitchServo, leftRollServo, rightRollServo);
+Servo rollServo;
+TCPManager tcpManager(esc, yawServo, pitchServo, rollServo);
 
 void calibrateESC()
 {
@@ -96,6 +94,13 @@ void setup()
     Serial.println(" 字节");
     
     // 分步初始化舵机，减少PWM冲击
+    Serial.println("初始化偏航舵机...");
+    yawServo.setPeriodHertz(50);
+    yawServo.attach(yawPin, 1000, 2000);
+    yawServo.writeMicroseconds(1500);  // 立即设置中立位置
+    delay(500);
+    Serial.println("偏航舵机初始化完成");
+    
     Serial.println("初始化俯仰舵机...");
     pitchServo.setPeriodHertz(50);
     pitchServo.attach(pitchPin, 1000, 2000);
@@ -103,45 +108,20 @@ void setup()
     delay(500);
     Serial.println("俯仰舵机初始化完成");
     
-    Serial.println("初始化左翻滚舵机...");
-    Serial.print("左翻滚舵机 - 设置频率...");
-    leftRollServo.setPeriodHertz(50);
+    Serial.println("初始化翻滚舵机...");
+    Serial.print("翻滚舵机 - 设置频率...");
+    rollServo.setPeriodHertz(50);
     Serial.println("完成");
-    Serial.print("左翻滚舵机 - 连接引脚 ");
-    Serial.print(leftRollPin);
+    Serial.print("翻滚舵机 - 连接引脚 ");
+    Serial.print(rollPin);
     Serial.print("...");
-    leftRollServo.attach(leftRollPin, 500, 2500);
+    rollServo.attach(rollPin, 500, 2500);
     Serial.println("完成");
-    Serial.print("左翻滚舵机 - 设置中立位置...");
-    leftRollServo.writeMicroseconds(1500);  // 立即设置中立位置
+    Serial.print("翻滚舵机 - 设置中立位置...");
+    rollServo.writeMicroseconds(1500);  // 立即设置中立位置
     Serial.println("完成");
     delay(500);
-    
-    Serial.println("初始化右翻滚舵机...");
-    Serial.print("右翻滚舵机 - 设置频率...");
-    
-    // 监控内存状态
-    Serial.print("内存检查: ");
-    Serial.print(ESP.getFreeHeap());
-    Serial.println(" 字节");
-    
-    rightRollServo.setPeriodHertz(50);
-    Serial.println("完成");
-    Serial.print("右翻滚舵机 - 连接引脚 ");
-    Serial.print(rightRollPin);
-    Serial.print("...");
-    
-    // 添加看门狗重置，防止卡死
-    Serial.println();
-    Serial.println("准备连接右翻滚舵机引脚...");
-    
-    rightRollServo.attach(rightRollPin, 500, 2500);
-    Serial.println("引脚连接完成");
-    Serial.print("右翻滚舵机 - 设置中立位置...");
-    rightRollServo.writeMicroseconds(1500);  // 立即设置中立位置
-    Serial.println("完成");
-    delay(500);
-    Serial.println("右翻滚舵机初始化完全完成！");
+    Serial.println("翻滚舵机初始化完全完成！");
 
     Serial.println("所有舵机已初始化并设置为中立位置");
 
@@ -156,53 +136,26 @@ void setup()
     // 最终系统状态确认
     Serial.println("执行最终系统状态确认...");
     esc.writeMicroseconds(1000);        // 确认油门为零
+    yawServo.writeMicroseconds(1500);   // 确认偏航中立
     pitchServo.writeMicroseconds(1500); // 确认俯仰中立
-    leftRollServo.writeMicroseconds(1500);  // 确认左翻滚中立
-    rightRollServo.writeMicroseconds(1500); // 确认右翻滚中立
+    rollServo.writeMicroseconds(1500);  // 确认翻滚中立
     delay(500);  // 减少延迟时间
 
     Serial.println("=== 系统启动完成！===");
     Serial.println("HTTP服务器已就绪，可以接受连接");
-    Serial.println("3舵机系统已激活 (电调+俯仰+双翻滚)");
-    Serial.println("暂时屏蔽偏航控制以节约PWM资源");
+    Serial.println("4舵机系统已激活 (电调+偏航+俯仰+翻滚)");
     Serial.println("测试命令:");
     Serial.println("  curl http://192.168.1.9/ping");
     Serial.println("  curl http://192.168.1.9/device");
     Serial.println("  curl \"http://192.168.1.9/throttle?value=20\" (油门测试)");
+    Serial.println("  curl \"http://192.168.1.9/yaw?value=30\" (偏航测试)");
     Serial.println("  curl \"http://192.168.1.9/pitch?value=30\" (俯仰测试)");
-    Serial.println("  curl \"http://192.168.1.9/roll?value=50\" (右翻滚测试)");
-    Serial.println("  curl \"http://192.168.1.9/roll?value=-50\" (左翻滚测试)");
+    Serial.println("  curl \"http://192.168.1.9/roll?value=50\" (翻滚测试)");
     Serial.println("==========================");
 }
 
 void loop()
 {
     tcpManager.update();
-    
-    // 每30秒输出一次状态信息，用于调试
-    static unsigned long lastStatusReport = 0;
-    if (millis() - lastStatusReport > 30000) {
-        lastStatusReport = millis();
-        Serial.println("=== 系统状态报告 ===");
-        Serial.print("WiFi状态: ");
-        Serial.println(WiFi.status() == WL_CONNECTED ? "已连接" : "未连接");
-        if (WiFi.status() == WL_CONNECTED) {
-            Serial.print("IP地址: ");
-            Serial.println(WiFi.localIP());
-            Serial.print("信号强度: ");
-            Serial.print(WiFi.RSSI());
-            Serial.println(" dBm");
-        }
-        Serial.print("系统运行时间: ");
-        Serial.print(millis() / 1000);
-        Serial.println(" 秒");
-        Serial.print("可用内存: ");
-        Serial.print(ESP.getFreeHeap());
-        Serial.println(" 字节");
-        Serial.println("HTTP服务器应该在端口80运行");
-        Serial.println("尝试访问: http://" + WiFi.localIP().toString() + "/device");
-        Serial.println("==================");
-    }
-    
     delay(10);
 }

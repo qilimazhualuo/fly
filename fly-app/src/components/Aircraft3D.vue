@@ -242,9 +242,8 @@ const updateControlSurfaces = (controls) => {
     const rudderAngle = (controls.rudder / 100) * Math.PI / 6
     rudder.rotation.z = rudderAngle
 
-    // 螺旋桨旋转 - 绕X轴旋转
-    const propSpeed = (controls.throttle / 100) * 0.5
-    propeller.rotation.x += propSpeed
+    // 螺旋桨固定旋转 - 绕X轴旋转
+    propeller.rotation.x += 0.3
 
     // 控制面发光效果
     if (Math.abs(controls.aileron) > 10) {
@@ -293,26 +292,6 @@ const animate = () => {
             <canvas ref="canvasRef"></canvas>
             <div class="interaction-hint">
                 <span>🖱️ 拖拽旋转 | 📱 双指缩放</span>
-            </div>
-        </div>
-        <div class="controls-overlay">
-            <div class="control-info">
-                <div class="info-item">
-                    <span class="label">油门:</span>
-                    <span class="value">{{ controls.throttle.toFixed(0) }}%</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">副翼:</span>
-                    <span class="value">{{ controls.aileron.toFixed(0) }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">升降:</span>
-                    <span class="value">{{ controls.elevator.toFixed(0) }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">方向:</span>
-                    <span class="value">{{ controls.rudder.toFixed(0) }}</span>
-                </div>
             </div>
         </div>
     </div>
@@ -367,37 +346,5 @@ canvas {
 
 .canvas-container:hover .interaction-hint {
     opacity: 1;
-}
-
-.controls-overlay {
-    margin-top: 8px;
-    width: 100%;
-}
-
-.control-info {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
-}
-
-.info-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 4px 8px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 4px;
-    font-size: 13px;
-
-    .label {
-        color: #ccc;
-        font-weight: bold;
-    }
-
-    .value {
-        color: #fff;
-        font-weight: bold;
-        font-size: 14px;
-    }
 }
 </style>

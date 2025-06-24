@@ -2,7 +2,7 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import StatusBar from '@/components/StatusBar.vue'
 import Aircraft3D from '@/components/Aircraft3D.vue'
-import VirtualJoystick from '@/components/VirtualJoystick.vue'
+import SliderControl from '@/components/SliderControl.vue'
 import ConfigPanel from '@/components/ConfigPanel.vue'
 import MapPanel from '@/components/MapPanel.vue'
 import ThrottleControl from '@/components/ThrottleControl.vue'
@@ -97,70 +97,87 @@ const handleTabChange = (tabId) => {
 // 测试翻滚舵机的函数
 const testRollServo = async (value) => {
     console.log('Testing roll servo with value:', value)
-    try {
-        const response = await request({
-            url: 'http://' + props.deviceInfo.ip + '/roll',
-            method: 'get',
-            params: { value },
-        })
-        console.log('Roll test response:', response)
-    } catch (error) {
-        console.error('Roll test failed:', error)
-    }
+    sendControlCommand('roll', value)
+    // 同时更新本地控制状态
+    controls.aileron = value
 }
 
 // 油门控制事件
 const handleThrottleChange = (value) => {
     controls.throttle = value
     // 发送油门数据到设备
-    // 直接调用接口
-    request({
-        url: 'http://' + props.deviceInfo.ip + '/throttle',
-        method: 'get',
-        params: { value },
-    })
+    sendControlCommand('throttle', value)
 }
 
-// 摇杆控制事件
-const handleLeftJoystick = ({ x, y }) => {
-    // 左摇杆：只有x轴控制方向舵(rudder/yaw)，水平转向
-    controls.rudder = Math.max(-100, Math.min(100, x))
-    request({
-        url: 'http://' + props.deviceInfo.ip + '/yaw',
-        method: 'get',
-        params: { value: controls.rudder },
-    })
+// 发送控制指令到服务器的统一函数
+const sendControlCommand = (type, value) => {
+    const urlMap = {
+        throttle: '/throttle',
+        roll: '/roll',
+        pitch: '/pitch',
+        yaw: '/yaw'
+    }
+
+    if (props.deviceInfo?.ip && urlMap[type]) {
+        request({
+            url: 'http://' + props.deviceInfo.ip + urlMap[type],
+            method: 'get',
+            params: { value },
+        }).then((response) => {
+            console.log(`${type} response:`, response)
+        }).catch((error) => {
+            console.error(`${type} request failed:`, error)
+        })
+    }
 }
 
-const handleRightJoystick = ({ x, y }) => {
-    // 右摇杆：x轴控制副翼(aileron/roll)，y轴控制升降舵(elevator/pitch)
-    controls.aileron = Math.max(-100, Math.min(100, x))
-    controls.elevator = Math.max(-100, Math.min(100, -y)) // 反转y轴，因为飞控中上推是负值
+// 滑块控制事件（带防抖和服务器通信）
+let controlTimers = {
+    roll: null,
+    pitch: null,
+    yaw: null
+}
 
-    // 调试输出
-    console.log('Roll control:', controls.aileron, 'Pitch control:', controls.elevator)
+const handleSliderControlChange = ({ type, value }) => {
+    // 立即更新本地状态
+    switch (type) {
+        case 'roll':
+            controls.aileron = value
+            break
+        case 'pitch':
+            controls.elevator = value
+            break
+        case 'yaw':
+            controls.rudder = value
+            break
+    }
 
-    // 发送副翼(横滚)控制数据到设备
-    request({
-        url: 'http://' + props.deviceInfo.ip + '/roll',
-        method: 'get',
-        params: { value: controls.aileron },
-    }).then((response) => {
-        console.log('Roll response:', response)
-    }).catch((error) => {
-        console.error('Roll request failed:', error)
+    // 防抖发送到服务器
+    if (controlTimers[type]) {
+        clearTimeout(controlTimers[type])
+    }
+    controlTimers[type] = setTimeout(() => {
+        sendControlCommand(type, value)
+    }, 150)
+}
+
+// 重置所有控制到中立位置
+const resetAllControls = () => {
+    controls.aileron = 0
+    controls.elevator = 0
+    controls.rudder = 0
+
+    // 清除所有防抖定时器
+    Object.keys(controlTimers).forEach(key => {
+        if (controlTimers[key]) {
+            clearTimeout(controlTimers[key])
+        }
     })
 
-    // 发送升降舵(俯仰)控制数据到设备
-    request({
-        url: 'http://' + props.deviceInfo.ip + '/pitch',
-        method: 'get',
-        params: { value: controls.elevator },
-    }).then((response) => {
-        console.log('Pitch response:', response)
-    }).catch((error) => {
-        console.error('Pitch request failed:', error)
-    })
+    // 立即发送重置指令
+    sendControlCommand('roll', 0)
+    sendControlCommand('pitch', 0)
+    sendControlCommand('yaw', 0)
 }
 </script>
 
@@ -174,8 +191,11 @@ const handleRightJoystick = ({ x, y }) => {
         <div class="main-content">
             <!-- 飞行数据面板 -->
             <div v-if="activeTab === 'flight'" class="flight-panel">
-                <!-- 控制器状态显示 -->
+                <!-- 3D飞机显示 -->
                 <Aircraft3D :flight-data="flightData" :controls="controls" />
+
+                <!-- 滑块控制面板 -->
+                <SliderControl :controls="controls" @control-change="handleSliderControlChange" />
 
                 <!-- 翻滚舵机测试按钮 -->
                 <div class="servo-test-panel">
@@ -188,8 +208,9 @@ const handleRightJoystick = ({ x, y }) => {
                         <button @click="testRollServo(100)" class="test-btn">右滚最大</button>
                     </div>
                     <div class="test-info">
-                        <p>当前翻滚值: {{ controls.aileron.toFixed(0) }}</p>
+                        <p>当前翻滚值: {{ (controls.aileron || 0).toFixed(0) }}</p>
                         <p>检查ESP32串口监视器查看"设置翻滚"信息</p>
+                        <p>控制模式: 滑块模式 🎚️</p>
                     </div>
                 </div>
             </div>
@@ -203,30 +224,6 @@ const handleRightJoystick = ({ x, y }) => {
 
         <!-- 油门控制 -->
         <ThrottleControl :value="controls.throttle" @throttle-change="handleThrottleChange" />
-
-        <!-- 虚拟摇杆控制区域 -->
-        <div class="joystick-area">
-            <!-- 左摇杆 (只控制偏航) -->
-            <VirtualJoystick position="left" :labels="{
-                top: '',
-                bottom: '',
-                left: '左偏航',
-                right: '右偏航',
-            }" :display-values="{
-                YAW: controls.rudder.toFixed(0),
-            }" @joystick-move="handleLeftJoystick" />
-
-            <!-- 右摇杆 (翻滚和俯仰) -->
-            <VirtualJoystick position="right" :labels="{
-                top: '拉升',
-                bottom: '俯冲',
-                left: '左滚',
-                right: '右滚',
-            }" :display-values="{
-                ROLL: controls.aileron.toFixed(0),
-                PITCH: controls.elevator.toFixed(0),
-            }" @joystick-move="handleRightJoystick" />
-        </div>
     </main>
 </template>
 
@@ -257,7 +254,7 @@ body {
     flex: 1;
     padding: 10px;
     overflow: hidden;
-    padding-bottom: 10px; // 减少底部间距，为油门控制留空间
+    padding-bottom: 10px;
 }
 
 .flight-panel {
@@ -266,21 +263,6 @@ body {
     flex-direction: column;
     gap: 8px;
     overflow-y: auto;
-}
-
-.joystick-area {
-    position: fixed;
-    bottom: 60px; // 向上移动，为油门控制留空间
-    left: 0;
-    right: 0;
-    height: 140px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    padding: 10px 20px;
-    background: transparent;
-    pointer-events: none;
-    z-index: 100;
 }
 
 .servo-test-panel {

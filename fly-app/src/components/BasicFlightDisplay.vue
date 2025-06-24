@@ -78,42 +78,42 @@ defineProps({
             <div class="control-item">
                 <div class="control-header">
                     <span class="label">高度</span>
-                    <span class="value">{{ flightData.altitude.toFixed(0) }}m</span>
+                    <span class="value">{{ (flightData.altitude || 0).toFixed(0) }}m</span>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill altitude"
-                        :style="{ width: Math.min(flightData.altitude / 2, 100) + '%' }"></div>
+                        :style="{ width: Math.min((flightData.altitude || 0) / 2, 100) + '%' }"></div>
                 </div>
             </div>
 
             <div class="control-item">
                 <div class="control-header">
                     <span class="label">油门</span>
-                    <span class="value">{{ controls.throttle.toFixed(0) }}%</span>
+                    <span class="value">{{ (controls.throttle || 0).toFixed(0) }}%</span>
                 </div>
                 <div class="progress-bar">
-                    <div class="progress-fill throttle" :style="{ width: controls.throttle + '%' }"></div>
+                    <div class="progress-fill throttle" :style="{ width: (controls.throttle || 0) + '%' }"></div>
                 </div>
             </div>
 
             <div class="control-item">
                 <div class="control-header">
                     <span class="label">副翼</span>
-                    <span class="value">{{ controls.aileron.toFixed(0) }}</span>
+                    <span class="value">{{ (controls.aileron || 0).toFixed(0) }}</span>
                 </div>
             </div>
 
             <div class="control-item">
                 <div class="control-header">
                     <span class="label">水平舵</span>
-                    <span class="value">{{ controls.elevator.toFixed(0) }}</span>
+                    <span class="value">{{ (controls.elevator || 0).toFixed(0) }}</span>
                 </div>
             </div>
 
             <div class="control-item">
                 <div class="control-header">
                     <span class="label">尾翼</span>
-                    <span class="value">{{ controls.rudder.toFixed(0) }}</span>
+                    <span class="value">{{ (controls.rudder || 0).toFixed(0) }}</span>
                 </div>
             </div>
         </div>
